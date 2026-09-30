@@ -1,0 +1,81 @@
+{% load static %}
+
+<div class="card product-card h-100 border-0 shadow-sm">
+    <div class="position-relative">
+        <div class="product-image-wrapper">
+            {% if product.image_url %}
+            <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}" 
+                 style="height: 250px; width: 100%; object-fit: cover;">
+            {% elif product.image %}
+            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" 
+                 style="height: 250px; width: 100%; object-fit: cover;">
+            {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                <i class="fas fa-image fa-3x text-muted"></i>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Badges -->
+        <div class="position-absolute top-0 start-0 m-2">
+            {% if product.is_featured %}
+            <span class="badge bg-danger rounded-pill px-3 py-2">⭐ Featured</span>
+            {% endif %}
+            {% if product.is_bestseller %}
+            <span class="badge bg-warning rounded-pill px-3 py-2 ms-1">🏆 Bestseller</span>
+            {% endif %}
+            {% if product.is_on_sale %}
+            <span class="badge bg-success rounded-pill px-3 py-2 ms-1">🔥 {{ product.discount_percentage }}% OFF</span>
+            {% endif %}
+        </div>
+        
+        <!-- Quick View Overlay -->
+        <div class="product-overlay d-flex align-items-center justify-content-center">
+            <a href="{{ product.get_absolute_url }}" class="btn btn-light rounded-pill">
+                <i class="fas fa-eye me-2"></i>View Details
+            </a>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+            <h5 class="card-title mb-2">
+                <a href="{{ product.get_absolute_url }}" class="text-decoration-none text-dark">
+                    {{ product.name|truncatechars:30 }}
+                </a>
+            </h5>
+            <div class="rating">
+                <i class="fas fa-star text-warning"></i>
+                <span class="small">{{ product.average_rating|floatformat:1 }}</span>
+                <span class="text-muted small">({{ product.total_reviews }})</span>
+            </div>
+        </div>
+        
+        <p class="text-muted small mb-1">{{ product.category.name }}</p>
+        <p class="text-muted small mb-3">{{ product.brand }}</p>
+        
+        <!-- Price Section -->
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="h5 mb-0 text-primary fw-bold">₨ {{ product.price|floatformat:0 }}</span>
+                {% if product.compare_price %}
+                <span class="text-muted text-decoration-line-through small ms-2">₨ {{ product.compare_price|floatformat:0 }}</span>
+                {% endif %}
+                {% if product.is_on_sale %}
+                <span class="badge bg-success ms-2">-{{ product.discount_percentage }}%</span>
+                {% endif %}
+            </div>
+            
+            <!-- Add to Cart -->
+            <form method="post" action="{% url 'cart:add_to_cart' %}" class="add-to-cart-form">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn btn-primary rounded-pill add-to-cart-btn" 
+                        title="Add to Cart">
+                    <i class="fas fa-shopping-cart"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

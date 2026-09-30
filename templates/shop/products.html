@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% if category %}{{ category.name }} - E-Shop{% else %}Products - E-Shop{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'shop:home' %}">Home</a></li>
+            {% if category %}
+            <li class="breadcrumb-item active">{{ category.name }}</li>
+            {% else %}
+            <li class="breadcrumb-item active">All Products</li>
+            {% endif %}
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm" style="border-radius: 15px;">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Categories</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="{% url 'shop:product_list' %}" 
+                               class="text-decoration-none {% if not category %}fw-bold text-primary{% endif %}">
+                                All Products
+                            </a>
+                        </li>
+                        {% for cat in all_categories %}
+                        <li class="mb-2">
+                            <a href="{{ cat.get_absolute_url }}" 
+                               class="text-decoration-none {% if category and category.id == cat.id %}fw-bold text-primary{% endif %}">
+                                {{ cat.icon }} {{ cat.name }}
+                            </a>
+                            <span class="badge bg-secondary float-end">{{ cat.products.count }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <hr>
+                    
+                    <h5 class="card-title mb-3">Filter by Price</h5>
+                    <form method="get" action="{% url 'shop:product_list' %}">
+                        <div class="mb-2">
+                            <label class="form-label">Min Price</label>
+                            <input type="number" name="min_price" class="form-control" placeholder="0" 
+                                   style="border-radius: 10px;">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Max Price</label>
+                            <input type="number" name="max_price" class="form-control" placeholder="1000" 
+                                   style="border-radius: 10px;">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100" style="border-radius: 10px;">
+                            <i class="fas fa-filter me-2"></i>Apply Filter
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4>
+                    {% if category %}
+                    {{ category.icon }} {{ category.name }}
+                    <span class="text-muted small">({{ products|length }} products)</span>
+                    {% else %}
+                    All Products
+                    <span class="text-muted small">({{ products|length }} products)</span>
+                    {% endif %}
+                </h4>
+                <div>
+                    <select class="form-select" style="border-radius: 10px;" onchange="location.href=this.value;">
+                        <option value="?sort=newest">Sort by: Newest</option>
+                        <option value="?sort=price_low">Price: Low to High</option>
+                        <option value="?sort=price_high">Price: High to Low</option>
+                        <option value="?sort=rating">Rating</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                {% for product in products %}
+                <div class="col-md-4 col-sm-6">
+                    {% include 'shop/includes/product_card.html' with product=product %}
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                    <h5>No products found</h5>
+                    <p class="text-muted">Try adjusting your filters or search terms.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
